@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//フェーバリットサーバーリストの画面設定。pingなど。実際にこれはいらない。フェーバリットサーバーは一つでいい。
+//サーバーリストの各セルの中の表示の設定。何を表示させるのか？という記述
+
 #import "MUServerCell.h"
 #import "MUColor.h"
 #import "MUFavouriteServer.h"

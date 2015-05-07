@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// メッセージバルーンの設定の箇所。これも使わない。
+
+
 #import "MUMessageBubbleTableViewCell.h"
 #import "MUTextMessage.h"
 #import "MUColor.h"

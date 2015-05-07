@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// サーバーリストの細かい表示の設定箇所。msとかpplとか、port表示とか。これ凄い細かいけどいらない。
+
+
 #import "MUServerButton.h"
 #import <MumbleKit/MKServerPinger.h>
 

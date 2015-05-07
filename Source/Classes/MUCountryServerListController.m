@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//  カントリーサーバーリストの設定。パブリックサーバーで使う部分なので、設定は必要ない
+
+
 #import "MUCountryServerListController.h"
 
 #import "MUDatabase.h"

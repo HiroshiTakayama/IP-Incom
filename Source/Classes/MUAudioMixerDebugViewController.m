@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// うーん。デバックを見るための記述だが、どこで見るのかよくわからない。
+
+
 #import "MUAudioMixerDebugViewController.h"
 #import <MumbleKit/MKAudio.h>
 

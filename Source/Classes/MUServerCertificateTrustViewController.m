@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//よくわからない。サーバーの証明てきな。たぶんいらない設定。
+
+
 #import <MumbleKit/MKConnection.h>
 #import <MumbleKit/MKCertificate.h>
 

@@ -17,5 +17,5 @@
 
 - (BOOL) hasPrimaryKey;
 - (NSComparisonResult) compare:(MUFavouriteServer *)favServ;
-
+//NSComparisonResultは大小の比較する
 @end

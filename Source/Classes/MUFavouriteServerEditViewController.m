@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// フェーバリットサーバーのエディット画面。
+
 #import "MUFavouriteServerEditViewController.h"
 
 #import "MUColor.h"
@@ -40,8 +42,10 @@
 #pragma mark -
 #pragma mark Initialization
 
+//エディットするテーブルビューの設定------------------------------------------------------------------------------
 - (id) initInEditMode:(BOOL)editMode withContentOfFavouriteServer:(MUFavouriteServer *)favServ {
     if ((self = [super initWithStyle:UITableViewStyleGrouped])) {
+        // グループ化されたテーブルビューを作成する
         _editMode = editMode;
         if (favServ) {
             _favourite = [favServ copy];
@@ -49,9 +53,11 @@
             _favourite = [[MUFavouriteServer alloc] init];
         }
         
+        // 各テーブルビューの文字や色などのUIの設定
+        //ここでは一番上のディスクリプションから-----------------------------------------------------------------------------
         _descriptionCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"MUFavouriteServerDescription"];
         [_descriptionCell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        [[_descriptionCell textLabel] setText:NSLocalizedString(@"Description", nil)];
+        [[_descriptionCell textLabel] setText:NSLocalizedString(@"サーバー名", nil)];
         _descriptionField = [[UITextField alloc] initWithFrame:CGRectMake(110.0, 10.0, 185.0, 30.0)];
         [_descriptionField setTextColor:[MUColor selectedTextColor]];
         [_descriptionField addTarget:self action:@selector(textFieldBeganEditing:) forControlEvents:UIControlEventEditingDidBegin];
@@ -61,15 +67,16 @@
         [_descriptionField setReturnKeyType:UIReturnKeyNext];
         [_descriptionField setAdjustsFontSizeToFitWidth:NO];
         [_descriptionField setTextAlignment:UITextAlignmentLeft];
-        [_descriptionField setPlaceholder:NSLocalizedString(@"Mumble Server", nil)];
-        [_descriptionField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+        [_descriptionField setPlaceholder:NSLocalizedString(@"通常サーバー", nil)];
         [_descriptionField setText:[_favourite displayName]];
+        [_descriptionField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
         [_descriptionField setClearButtonMode:UITextFieldViewModeWhileEditing];
         [[_descriptionCell contentView] addSubview:_descriptionField];
-
+        
+        //サーバーアドレス ※実際にここは固定設定にして非表示にする箇所---------------------------------------------------------------
         _addressCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"MUFavouriteServerAddress"];
         [_addressCell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        [[_addressCell textLabel] setText:NSLocalizedString(@"Address", nil)];
+        [[_addressCell textLabel] setText:NSLocalizedString(@"IPアドレス", nil)];
         _addressField = [[UITextField alloc] initWithFrame:CGRectMake(110.0, 10.0, 185.0, 30.0)];
         [_addressField setTextColor:[MUColor selectedTextColor]];
         [_addressField addTarget:self action:@selector(textFieldBeganEditing:) forControlEvents:UIControlEventEditingDidBegin];
@@ -78,15 +85,16 @@
         [_addressField addTarget:self action:@selector(textFieldDidEndOnExit:) forControlEvents:UIControlEventEditingDidEndOnExit];
         [_addressField setReturnKeyType:UIReturnKeyNext];
         [_addressField setAdjustsFontSizeToFitWidth:NO];
-        [_addressField setTextAlignment:UITextAlignmentLeft];
-        [_addressField setPlaceholder:NSLocalizedString(@"Hostname or IP address", nil)];
         [_addressField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
         [_addressField setAutocorrectionType:UITextAutocorrectionTypeNo];
+        [_addressField setTextAlignment:UITextAlignmentLeft];
+        [_addressField setPlaceholder:@"54.250.194.195"];
         [_addressField setKeyboardType:UIKeyboardTypeURL];
         [_addressField setText:[_favourite hostName]];
         [_addressField setClearButtonMode:UITextFieldViewModeWhileEditing];
         [[_addressCell contentView] addSubview:_addressField];
 
+        // ポート設定　※実際にここは固定設定にして非表示にする箇所-------------------------------------------------------------------------
         _portCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"MUFavouriteServerPort"];
         [_portCell setSelectionStyle:UITableViewCellSelectionStyleNone];
         [[_portCell textLabel] setText:NSLocalizedString(@"Port", nil)];
@@ -109,10 +117,11 @@
             [_portField setText:@""];
         [_portField setClearButtonMode:UITextFieldViewModeWhileEditing];
         [[_portCell contentView] addSubview:_portField];
-
+        
+        // ユーザー名の設定---------------------------------------------------------------------------------------------------------
         _usernameCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"MUFavouriteServerUsername"];
         [_usernameCell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        [[_usernameCell textLabel] setText:NSLocalizedString(@"Username", nil)];
+        [[_usernameCell textLabel] setText:NSLocalizedString(@"ユーザー名", nil)];
         _usernameField = [[UITextField alloc] initWithFrame:CGRectMake(110.0, 10.0, 185.0, 30.0)];
         [_usernameField setTextColor:[MUColor selectedTextColor]];
         [_usernameField addTarget:self action:@selector(textFieldBeganEditing:) forControlEvents:UIControlEventEditingDidBegin];
@@ -130,9 +139,10 @@
         [_usernameField setClearButtonMode:UITextFieldViewModeWhileEditing];
         [[_usernameCell contentView] addSubview:_usernameField];
         
+        // パスワードの設定　伏せ字の設定→setSecureTextEntry = YES  ---------------------------------------------------------------------------------
         _passwordCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"MUFavouriteServerPassword"];
         [_passwordCell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        [[_passwordCell textLabel] setText:NSLocalizedString(@"Password", nil)];
+        [[_passwordCell textLabel] setText:NSLocalizedString(@"パスワード", nil)];
         _passwordField = [[UITextField alloc] initWithFrame:CGRectMake(110.0, 10.0, 185.0, 30.0)];
         [_passwordField setTextColor:[MUColor selectedTextColor]];
         [_passwordField addTarget:self action:@selector(textFieldBeganEditing:) forControlEvents:UIControlEventEditingDidBegin];
@@ -153,7 +163,9 @@
     }
     return self;
 }
+//-----------------------------------------------------------------------------------------------------------------
 
+//ほんでここで徹底的に解放------------------------------------------------------------------------------------------
 - (id) init {
     return [self initInEditMode:NO withContentOfFavouriteServer:nil];
 }
@@ -174,7 +186,9 @@
 
     [super dealloc];
 }
+//-----------------------------------------------------------------------------------------------------------------
 
+// ipad用のアプリの設計箇所。回転の記述など------------------------------------------------------------------------
 - (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     // On iPad, we support all interface orientations.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -183,10 +197,12 @@
     
     return toInterfaceOrientation == UIInterfaceOrientationPortrait;
 }
+//-----------------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark View lifecycle
 
+// ナビゲーションバーの設定------------------------------------------------------------------------
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
@@ -214,42 +230,48 @@
                                              selector:@selector(keyboardWillBeHidden:)
                                                  name:UIKeyboardWillHideNotification object:nil];
 
+    //　エディット画面のタイトル設定-------------------------------------------------------
     // View title
     if (!_editMode) {
-        [[self navigationItem] setTitle:NSLocalizedString(@"New Favourite", nil)];
+        [[self navigationItem] setTitle:NSLocalizedString(@"設定", nil)];
     } else {
-        [[self navigationItem] setTitle:NSLocalizedString(@"Edit Favourite", nil)];
+        [[self navigationItem] setTitle:NSLocalizedString(@"編集", nil)];
     }
 
-    // Cancel button
-    UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Cancel", nil)
+    // キャンセルボタンの設定--------------------------------------------------------------------------------
+    UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"キャンセル", nil)
                                                                      style:UIBarButtonItemStylePlain
                                                                     target:self
                                                                     action:@selector(cancelClicked:)];
-    [[self navigationItem] setLeftBarButtonItem:cancelButton];
+    [[self navigationItem] setLeftBarButtonItem:cancelButton]; //左上へ
     [cancelButton release];
+    
 
-    // Done
-    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil)
+    // 完了ボタンの設定------------------------------------------------------------------------------
+    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"完了", nil)
                                                                    style:UIBarButtonItemStyleDone
                                                                   target:self
                                                                   action:@selector(doneClicked:)];
-    [[self navigationItem] setRightBarButtonItem:doneButton];
+    [[self navigationItem] setRightBarButtonItem:doneButton];  //右上へ
     [doneButton release];
 }
 
 - (void) viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super viewWillDisappear:animated];  //画面が閉じる前に呼び出される
+    [[NSNotificationCenter defaultCenter] removeObserver:self];  //登録済みの通知要求を削除する
 }
+
+//------------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Table view data source
 
+//エディット画面の作成。まずセクションを何個作成するか
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView {
      return 1;
 }
 
+//次にセクション１にセルを何個作成するか-------------------------------------------------------------------------------
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
         return 5;
@@ -257,6 +279,7 @@
     return 0;
 }
 
+// そして上から順番にそれぞれのセルにどのような名前を設定するか---------------------------------------------------
 - (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if ([indexPath section] == 0) {
         if ([indexPath row] == 0) {
@@ -273,42 +296,55 @@
     }
     return nil;
 }
+//-------------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark UIBarButton actions
 
-- (void) cancelClicked:(id)sender {
-    [[self navigationController] dismissModalViewControllerAnimated:YES];
+//ナビゲーションバーのボタンが押された場合、どのような動きを行うかの記述---------------------------------------------------
+- (void) cancelClicked:(id)sender {  //キャンセルボタンが押されたら
+    [[self navigationController] dismissModalViewControllerAnimated:YES]; //モーダルの動きで画面をアニメーションを行いながら閉じる
 }
 
-- (void) doneClicked:(id)sender {
+- (void) doneClicked:(id)sender { //完了ボタンが押されたら
     // Perform some basic tidying up. For example, for the port field, we
     // want the default port number to be used if it wasn't filled out.
     if ([_favourite displayName] == nil) {
-        [_favourite setDisplayName:NSLocalizedString(@"Mumble Server", nil)];
+        [_favourite setDisplayName:NSLocalizedString(@"無名の接続サーバー", nil)];
     }
+    
+    if ([_favourite hostName] == nil) {
+        [_favourite setHostName:@"54.250.194.195"];
+    }
+    
     if ([_favourite port] == 0) {
         [_favourite setPort:64738];
     }
 
-    // Get rid of oureslves and call back to our target to tell it that
+    // Get rid of oureslves and call back to our target to tell it that          Get rid of〜　取り除く
     // we're done.
     [[self navigationController] dismissModalViewControllerAnimated:YES];
-    if ([_target respondsToSelector:_doneAction]) {
-        [_target performSelector:_doneAction withObject:self];
+    if ([_target respondsToSelector:_doneAction]) {  //respondsToSelectorはインスタンスが指定したメソッドを持っているか調べる。ここでは_doneAction
+        [_target performSelector:_doneAction withObject:self]; //SELオブジェクトに格納したメソッドの実行にはperformSelectorを用いる。
+        //メソッドを特定する名前は「SEL型」に格納。ここではdoneActionという名前を「SEL型」に格納している。それを実行するにはperformSelectorを使う。という内容。
     }
 }
+//------------------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Data accessors
 
+//たぶんエディット画面で作成した内容をどこかに表示するためにコピーを作るみたいな話--------------------------------------------
+
 - (MUFavouriteServer *) copyFavouriteFromContent {
     return [_favourite copy];
 }
+//-----------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Target/actions
 
+//アクションの定義-----------------------------------------
 - (void) setTarget:(id)target {
     _target = target;
 }
@@ -324,10 +360,12 @@
 - (SEL) doneAction {
     return _doneAction;
 }
+//-------------------------------------------------------
 
 #pragma mark -
 #pragma mark Text field actions
 
+//テキストフィールドを選択してスタートしてからどのような動きを実行するか----------
 - (void) textFieldBeganEditing:(UITextField *)sender {
     _activeTextField = sender;
     if (sender == _descriptionField) {
@@ -341,12 +379,15 @@
     } else if (sender == _passwordField) {
         _activeCell = _passwordCell;
     }
-}
+}        //それぞれのセルを選択した際にアクティブフィールドになるように設定している
 
+
+// テキストフィールドがからっぽの場合----------------------
 - (void) textFieldEndedEditing:(UITextField *)sender {
     _activeTextField = nil;
 }
 
+//テキストフィールドが変更された場合の動き------------------
 - (void) textFieldDidChange:(UITextField *)sender {
     if (sender == _descriptionField) {
         [_favourite setDisplayName:[sender text]];
@@ -359,8 +400,9 @@
     } else if (sender == _passwordField) {
         [_favourite setPassword:[sender text]];
     }
-}
+}  //要はフィールドが変更されたら、それぞれのsenderを書き換えますよ。と
 
+//ひとつひとつにセルの編集が終わった場合の処理-----------------------
 - (void) textFieldDidEndOnExit:(UITextField *)sender {
     if (sender == _descriptionField) {
         [_addressField becomeFirstResponder];
@@ -381,20 +423,21 @@
     } else if (sender == _passwordField) {
         [_passwordField resignFirstResponder];
         _activeTextField = nil;
-        _activeCell = nil;
+        _activeCell = nil;  //要はそれぞれ編集が終わったら次のフィールドにフォーカスされて、最後はフォーカスが離れるっていう流れ
     }
     if (_activeCell) {
-        [self.tableView scrollToRowAtIndexPath:[self.tableView indexPathForCell:_activeCell]
-                              atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        [self.tableView scrollToRowAtIndexPath:[self.tableView indexPathForCell:_activeCell]  //選択しているセル（アクティブセル）までスクロールしますよ
+                              atScrollPosition:UITableViewScrollPositionBottom animated:YES];  //指定したセルが、表示領域の「一番下」に来るように移動
     }
 }
 
-- (void) keyboardWasShown:(NSNotification*)aNotification {
+// エディットの際のキーボードの設定---------------------------------------------------------
+- (void) keyboardWasShown:(NSNotification*)aNotification {  //キーボードが出されるとき
     NSDictionary* info = [aNotification userInfo];
     CGSize kbSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
     
     [UIView animateWithDuration:0.2f animations:^{
-        UIEdgeInsets contentInsets = UIEdgeInsetsMake(0.0, 0.0, kbSize.height, 0.0);
+        UIEdgeInsets contentInsets = UIEdgeInsetsMake(0.0, 0.0, kbSize.height, 0.0);  //テキストの余白（マージン）の設定
         self.tableView.contentInset = contentInsets;
         self.tableView.scrollIndicatorInsets = contentInsets;
     } completion:^(BOOL finished) {
@@ -407,7 +450,7 @@
     }];
 }
 
-- (void) keyboardWillBeHidden:(NSNotification*)aNotification {
+- (void) keyboardWillBeHidden:(NSNotification*)aNotification {  //キーボード閉じられようとしているとき
     [UIView animateWithDuration:0.2f animations:^{
         UIEdgeInsets contentInsets = UIEdgeInsetsZero;
         self.tableView.contentInset = contentInsets;
@@ -416,6 +459,6 @@
         // ...
     }];
 }
-
+//-----------------------------------------------------------------------------------------
 
 @end

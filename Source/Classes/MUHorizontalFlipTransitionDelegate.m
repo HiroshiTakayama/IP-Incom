@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// たぶん反転しながら画面が切り替わる設定だと思うけど、この設定たぶんいらない。
+
+
 #import "MUHorizontalFlipTransitionDelegate.h"
 
 @implementation MUHorizontalFlipTransitionDelegate

@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//　iPad版。ここはトップ画面の設定。UIを大幅に変更したいポイント。  ここはまだいじっていない　8/18
+
+
 #import "MUWelcomeScreenPad.h"
-#import "MUPreferencesViewController.h"
 #import "MULegalViewController.h"
-#import "MUPopoverBackgroundView.h"
-#import "MUPublicServerListController.h"
-#import "MUFavouriteServerListController.h"
-#import "MULanServerListController.h"
 
 @interface MUWelcomeScreenPad () <UIPopoverControllerDelegate, UITableViewDataSource, UITableViewDelegate> {
     UIPopoverController   *_prefsPopover;
@@ -90,9 +88,6 @@
     self.navigationItem.rightBarButtonItem = aboutBtn;
     [aboutBtn release];
     
-    UIBarButtonItem *prefsBtn = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Preferences", nil) style:UIBarButtonItemStyleBordered target:self action:@selector(prefsButtonClicked:)];
-    self.navigationItem.leftBarButtonItem = prefsBtn;
-    [prefsBtn release];
     
     [_tableView deselectRowAtIndexPath:[_tableView indexPathForSelectedRow] animated:animated];
 }
@@ -127,11 +122,7 @@
     /* Servers section. */
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
-            cell.textLabel.text = NSLocalizedString(@"Public Servers", nil);
-        } else if (indexPath.row == 1) {
-            cell.textLabel.text = NSLocalizedString(@"Favourite Servers", nil);
-        } else if (indexPath.row == 2) {
-            cell.textLabel.text = NSLocalizedString(@"LAN Servers", nil);
+            cell.textLabel.text = NSLocalizedString(@"Favorite", nil);
         }
     }
     
@@ -144,16 +135,7 @@
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     /* Servers section. */
     if (indexPath.section == 0) {
-        if (indexPath.row == 0) {
-            MUPublicServerListController *serverList = [[[MUPublicServerListController alloc] init] autorelease];
-            [self.navigationController pushViewController:serverList animated:YES];
-        } else if (indexPath.row == 1) {
-            MUFavouriteServerListController *favList = [[[MUFavouriteServerListController alloc] init] autorelease];
-            [self.navigationController pushViewController:favList animated:YES];
-        } else if (indexPath.row == 2) {
-            MULanServerListController *lanList = [[[MULanServerListController alloc] init] autorelease];
-            [self.navigationController pushViewController:lanList animated:YES];
-        }
+        
     }
 }
 
@@ -201,24 +183,5 @@
     if (_prefsPopover != nil) {
         return;
     }
-    
-    MUPreferencesViewController *prefs = [[[MUPreferencesViewController alloc] init] autorelease];
-    UINavigationController *navCtrl = [[[UINavigationController alloc] initWithRootViewController:prefs] autorelease];
-    UIPopoverController *popOver = [[UIPopoverController alloc] initWithContentViewController:navCtrl];
-    popOver.popoverBackgroundViewClass = [MUPopoverBackgroundView class];
-    popOver.delegate = self;
-    [popOver presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
-    
-    _prefsPopover = popOver;
 }
-
-#pragma mark - UIPopoverControllerDelegate
-
-- (void) popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
-    if (popoverController == _prefsPopover) {
-        [_prefsPopover release];
-        _prefsPopover = nil;
-    }
-}
-
 @end

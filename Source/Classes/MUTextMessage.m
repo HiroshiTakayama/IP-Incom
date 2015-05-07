@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// メッセージ機能の実装。使わない。
+
+
 #import "MUTextMessage.h"
 
 @interface MUTextMessage () {

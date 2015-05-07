@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//その名の通り、バージョンチェッカー。まあいらないと思う。
+
 #import <Foundation/Foundation.h>
 
 @interface MUVersionChecker : NSObject

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// キーボードの表示・非表示は、NSNotificationCenterオブジェクトを介して行う
+// 画面のサイズを取得して、キーボードのUIを自動的に変更するためのメソッドを書いている。ここは使わない。
+
 #import "MUNotificationController.h"
 
 @interface MUNotificationController () {
@@ -12,19 +15,22 @@
 }
 - (void) showNext;
 - (void) hideCurrent;
+
 @end
 
 @implementation MUNotificationController
 
 + (MUNotificationController *) sharedController {
     static MUNotificationController *nc;
-    static dispatch_once_t token;
+    static dispatch_once_t token;  //dispatch_once_t token;
+    // dispatch_once(&token, ^ はコードを一度だけ実行
     dispatch_once(&token, ^{
         nc = [[MUNotificationController alloc] init];
     });
     return nc;
 }
 
+// キーボードが表示された後にkeyboardDidShowメソッド、キーボードが非表示になった後にkeyboardDidHideメソッドを呼び出す
 - (id) init {
     if ((self = [super init])) {
         _notificationQueue = [[NSMutableArray alloc] init];

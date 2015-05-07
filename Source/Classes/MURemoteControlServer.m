@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// リモートコントロールサーバーの設定だが、これを何に使っているかわからない。
+// 調べてみたけどこれがなくても、使用上は問題ありません。
+
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>

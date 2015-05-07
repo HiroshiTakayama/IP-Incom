@@ -154,6 +154,7 @@ static FMDatabase *db = nil;
 + (void) deleteFavourite:(MUFavouriteServer *)favServ {
     NSAssert([favServ hasPrimaryKey], @"Cannot delete a FavouriteServer not originated from the database.");
     [db executeUpdate:@"DELETE FROM `favourites` WHERE `id`=?", [NSNumber numberWithInteger:[favServ primaryKey]]];
+    // executeUpdate 更新処理系(CREATE 、INSERT、DELETE文 など)
 }
 
 // Save favourites
@@ -165,10 +166,11 @@ static FMDatabase *db = nil;
     [db commit];
 }
 
-// Fetch all favourites
+// Fetch all favourites  (fetch all とは複数行を取得という意味)
 + (NSMutableArray *) fetchAllFavourites {
     NSMutableArray *favs = [[NSMutableArray alloc] init];
     FMResultSet *res = [db executeQuery:@"SELECT `id`, `name`, `hostname`, `port`, `username`, `password` FROM `favourites`"];
+    // executeQueryとは参照系処理（SELECT文 など)）
     while ([res next]) {
         MUFavouriteServer *fs = [[MUFavouriteServer alloc] init];
         [fs setPrimaryKey:[res intForColumnIndex:0]];
@@ -187,6 +189,7 @@ static FMDatabase *db = nil;
 #pragma mark -
 #pragma mark Certificate verification
 
+// Certificate verificationはいらない----------------------------------------------------------
 + (void) storeDigest:(NSString *)hash forServerWithHostname:(NSString *)hostname port:(NSInteger)port {
     [db executeUpdate:@"REPLACE INTO `cert` (`hostname`,`port`,`digest`) VALUES (?,?,?)",
            hostname, [NSNumber numberWithInteger:port], hash];
@@ -201,10 +204,12 @@ static FMDatabase *db = nil;
     }
     return nil;
 }
+//--------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Username rememberer
 
+// username remembererはどういう時につかうの？　→たぶんデータを入れ替えるとき
 + (void) storeUsername:(NSString *)username forServerWithHostname:(NSString *)hostname port:(NSInteger)port {
     [db executeUpdate:@"REPLACE INTO `usernames` (`hostname`,`port`,`username`) VALUES (?,?,?)",
         hostname, [NSNumber numberWithInteger:port], username];
@@ -222,6 +227,7 @@ static FMDatabase *db = nil;
 #pragma mark -
 #pragma mark Access tokens
 
+// アクセストークンはいらない-------------------------------------------------------------------------------
 + (void) storeAccessTokens:(NSArray *)tokens forServerWithHostname:(NSString *)hostname port:(NSInteger)port {
     NSData *tokensJSON = nil;
     if (tokens != nil) {
@@ -251,5 +257,6 @@ static FMDatabase *db = nil;
     }
     return nil;
 }
+//----------------------------------------------------------------------------------------------------
 
 @end

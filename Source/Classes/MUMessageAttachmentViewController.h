@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// メッセージ機能の実装。必要ない。
+
+
 #import <UIKit/UIKit.h>
 
 @interface MUMessageAttachmentViewController : UITableViewController

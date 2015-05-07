@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// ここはキモのはず
+// どういう立ち回りなのかがイマイチつかめないけど、こので初期設定をどうするかなどの記述が多い
+
 #import "MUApplicationDelegate.h"
 
 #import "MUWelcomeScreenPhone.h"
 #import "MUWelcomeScreenPad.h"
 #import "MUDatabase.h"
-#import "MUPublicServerList.h"
 #import "MUConnectionController.h"
 #import "MUNotificationController.h"
 #import "MURemoteControlServer.h"
@@ -18,13 +20,11 @@
 #import <MumbleKit/MKAudio.h>
 #import <MumbleKit/MKVersion.h>
 
-#import "PLCrashReporter.h"
 
 @interface MUApplicationDelegate () <UIApplicationDelegate,
                                      UIAlertViewDelegate> {
     UIWindow                  *_window;
     UINavigationController    *_navigationController;
-    MUPublicServerListFetcher *_publistFetcher;
     BOOL                      _connectionActive;
 #ifdef MUMBLE_BETA_DIST
     MUVersionChecker          *_verCheck;
@@ -32,77 +32,21 @@
 }
 - (void) setupAudio;
 - (void) forceKeyboardLoad;
-- (void) notifyCrash;
 @end
 
 @implementation MUApplicationDelegate
 
-- (void) notifyCrash {
-    PLCrashReporter *crashReporter = [PLCrashReporter sharedReporter];
-    if ([crashReporter hasPendingCrashReport]) {
-        BOOL autoReport = [[NSUserDefaults standardUserDefaults] boolForKey:@"AutoCrashReport"];
-        if (autoReport) {
-            [self sendPendingCrashReport];
-        } else {
-            NSString *title = NSLocalizedString(@"Crash Reporting", nil);
-            NSString *msg = NSLocalizedString(@"We're terribly sorry. It looks like Mumble has recently crashed. "
-                                              @"Do you want to send a crash report to the Mumble developers?", nil);
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title
-                                                                message:msg
-                                                               delegate:self
-                                                      cancelButtonTitle:NSLocalizedString(@"No", nil)
-                                                      otherButtonTitles:NSLocalizedString(@"Yes", nil),
-                                                                        NSLocalizedString(@"Always", nil), nil];
-            [alertView show];
-            [alertView release];
-        }
-    }
-}
-
-- (void) sendPendingCrashReport {
-    NSError *err = nil;
-    PLCrashReporter *crashReporter = [PLCrashReporter sharedReporter];
-
-    NSData *crashData = [crashReporter loadPendingCrashReportDataAndReturnError:&err];
-    if (crashData == nil) {
-        NSLog(@"MUApplicationDelegate: unable to load pending crash report: %@", err);
-        return;
-    }
-    if (![crashReporter purgePendingCrashReportAndReturnError:&err]) {
-        NSLog(@"MUApplicationDelegate: unable to purge pending crash report: %@", err);
-    }
-
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:
-                                 [NSString stringWithFormat:@"https://mumblecrash.appspot.com/report?ver=%@&gitrev=%@",
-                                  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"],
-                                  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"MumbleGitRevision"], nil]]];
-    [req setHTTPMethod:@"POST"];
-    [req setHTTPBody:crashData];
-    
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *resp, NSData *data, NSError *err) {
-        if (err != nil) {
-            NSLog(@"MUApplicationDelegate: unable to submit crash report: %@", err);
-        }
-    }];
-}
 
 - (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
     if (buttonIndex == 0) {
-        NSError *err = nil;
-        PLCrashReporter *crashReporter = [PLCrashReporter sharedReporter];
-        if (![crashReporter purgePendingCrashReportAndReturnError:&err]) {
-            NSLog(@"MUApplicationDelegate: unable to purge pending crash report: %@", err);
-        }
         return;
     }
     if (buttonIndex == 2)
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"AutoCrashReport"];
-    [self sendPendingCrashReport];
 }
 
 - (BOOL) application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSError *err = nil;
-    [[PLCrashReporter sharedReporter] enableCrashReporterAndReturnError:&err];
     if (err != nil) {
         NSLog(@"MUApplicationDelegate: Unable to enable PLCrashReporter: %@", err);
     }
@@ -119,11 +63,7 @@
     
     // Initialize the notification controller
     [MUNotificationController sharedController];
-    
-    // Try to fetch an updated public server list
-    _publistFetcher = [[MUPublicServerListFetcher alloc] init];
-    [_publistFetcher attemptUpdate];
-    
+        
     // Set MumbleKit release string
     [[MKVersion sharedVersion] setOverrideReleaseString:
         [NSString stringWithFormat:@"Mumble for iOS %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
@@ -131,18 +71,19 @@
     // Enable Opus unconditionally
     [[MKVersion sharedVersion] setOpusEnabled:YES];
 
+    // 初期の立ち上げで何を標準の設定にするかの記述
     // Register default settings
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:
                                                                 // Audio
-                                                                [NSNumber numberWithFloat:1.0f],   @"AudioOutputVolume",
+                                                                [NSNumber numberWithFloat:0.1f],   @"AudioOutputVolume",  // 1.0fから0.1fに
                                                                 [NSNumber numberWithFloat:0.6f],   @"AudioVADAbove",
                                                                 [NSNumber numberWithFloat:0.3f],   @"AudioVADBelow",
                                                                 @"amplitude",                      @"AudioVADKind",
-                                                                @"vad",                            @"AudioTransmitMethod",
-                                                                [NSNumber numberWithBool:YES],     @"AudioPreprocessor",
+                                                                @"ptt",                            @"AudioTransmitMethod",  // PTTに変更
+                                                                [NSNumber numberWithBool:YES],     @"AudioPreprocessor",  //これでOK
                                                                 [NSNumber numberWithBool:YES],     @"AudioEchoCancel",
                                                                 [NSNumber numberWithFloat:1.0f],   @"AudioMicBoost",
-                                                                @"balanced",                       @"AudioQualityKind",
+                                                                @"low",                       @"AudioQualityKind",  //balanceからlowに変更
                                                                 [NSNumber numberWithBool:NO],      @"AudioSidetone",
                                                                 [NSNumber numberWithFloat:0.2f],   @"AudioSidetoneVolume",
                                                                 [NSNumber numberWithBool:YES],     @"AudioSpeakerPhoneMode",
@@ -197,8 +138,6 @@
     [_window setRootViewController:_navigationController];
     [_window makeKeyAndVisible];
     
-    [self notifyCrash];
-
     NSURL *url = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
     if ([[url scheme] isEqualToString:@"mumble"]) {
         MUConnectionController *connController = [MUConnectionController sharedController];
@@ -264,7 +203,8 @@
     
     settings.vadMin = [defaults floatForKey:@"AudioVADBelow"];
     settings.vadMax = [defaults floatForKey:@"AudioVADAbove"];
-    
+
+    // もしかすると、ここの数字を変更すれば音声品質が変更できるかもしれない-----------------------
     NSString *quality = [defaults stringForKey:@"AudioQualityKind"];
     if ([quality isEqualToString:@"low"]) {
         // Will fall back to CELT if the
@@ -284,6 +224,8 @@
         settings.codec = MKCodecFormatOpus;
         settings.quality = 72000;
         settings.audioPerPacket = 1;
+        //------------------------------------------------------------------------------
+        
     } else {
         settings.codec = MKCodecFormatCELT;
         if ([[defaults stringForKey:@"AudioCodec"] isEqualToString:@"opus"])

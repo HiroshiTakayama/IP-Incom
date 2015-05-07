@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// サーバー接続の要になる部分。IPアドレスやポートの設定など？
+
 #import "MUConnectionController.h"
 #import "MUServerRootViewController.h"
 #import "MUServerCertificateTrustViewController.h"
@@ -37,23 +39,26 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
 
     id                         _transitioningDelegate;
 }
-- (void) establishConnection;
-- (void) teardownConnection;
-- (void) showConnectingView;
-- (void) hideConnectingView;
+- (void) establishConnection;  //接続成立
+- (void) teardownConnection;  //接続解除　＊あとでたくさん出てくる
+- (void) showConnectingView;  //接続中の表示を出す
+- (void) hideConnectingView;  //接続中の表示を隠す
 @end
 
 @implementation MUConnectionController
 
+//クラスメソッド----------------------------------------
 + (MUConnectionController *) sharedController {
     static MUConnectionController *nc;
     static dispatch_once_t token;
     dispatch_once(&token, ^{
+        // dispatch_once(&token は1度だけ実行するコード
         nc = [[MUConnectionController alloc] init];
     });
     return nc;
 }
 
+// スーパークラスへのメソッド--------------------------------------------------
 - (id) init {
     if ((self = [super init])) {
         if (MUGetOperatingSystemVersion() >= MUMBLE_OS_IOS_7) {
@@ -63,12 +68,14 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     return self;
 }
 
+// 割り当てたメモリの意図的な解放----------------------------------------------------
 - (void) dealloc {
     [super dealloc];
 
     [_transitioningDelegate release];
 }
 
+// それぞれの情報をretainして、接続を実行する-----------------------------------------------------------------------
 - (void) connetToHostname:(NSString *)hostName port:(NSUInteger)port withUsername:(NSString *)userName andPassword:(NSString *)password withParentViewController:(UIViewController *)parentViewController {
     _hostname = [hostName retain];
     _port = port;
@@ -76,37 +83,46 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     _password = [password retain];
     
     [self showConnectingView];
-    [self establishConnection];
+    [self establishConnection];  //接続成立
     
     _parentViewController = [parentViewController retain];
 }
+//---------------------------------------------------------------------------------------------------------
 
+//接続したら
 - (BOOL) isConnected {
-    return _connection != nil;
+    return _connection != nil;  //戻り値はnilじゃないを返す！
 }
 
+// サーバーから接続解除されたら
 - (void) disconnectFromServer {
     [_serverRoot dismissModalViewControllerAnimated:YES];
-    [self teardownConnection];
+    [self teardownConnection];  //teardownConnectionを実行する
 }
 
+//showConnectingViewの記述（表示内容や接続時間など）------------------------------------------------------------------
 - (void) showConnectingView {
-    NSString *title = [NSString stringWithFormat:@"%@...", NSLocalizedString(@"Connecting", nil)];
+    NSString *title = [NSString stringWithFormat:@"%@...", NSLocalizedString(@"無線機を立ち上げています", nil)];
     NSString *msg = [NSString stringWithFormat:
-                        NSLocalizedString(@"Connecting to %@:%lu", @"Connecting to hostname:port"),
+                        NSLocalizedString(@"Connecting to %@:%lu", @"Connecting to hostname:port"),  //まあここはいらないかな？
                             _hostname, (unsigned long)_port];
     
+    // alertViewへ下記の記述を格納
     _alertView = [[UIAlertView alloc] initWithTitle:title
                                             message:msg
                                            delegate:self
-                                  cancelButtonTitle:NSLocalizedString(@"Cancel", nil)
+                                  cancelButtonTitle:NSLocalizedString(@"キャンセル", nil)
                                   otherButtonTitles:nil];
+    
+// サーバー接続までの待機時間と接続するまで、表示をリピートさせるか？などの記述
     [_alertView show];
     _timer = [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(updateTitle) userInfo:nil repeats:YES];
 }
+//-----------------------------------------------------------------------------------------------------------------
 
+//ConnectingViewが隠れる記述
 - (void) hideConnectingView {
-    [_alertView dismissWithClickedButtonIndex:1 animated:YES];
+    [_alertView dismissWithClickedButtonIndex:1 animated:YES];  //キャンセルボタンを押したら
     [_alertView release];
     _alertView = nil;
     [_timer invalidate];
@@ -114,9 +130,13 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
 
     // This runloop wait works around a new behavior in iOS 7 where our UIAlertViews would suddenly
     // disappear if shown too soon after hiding the previous alert view.
-    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeInterval:0.350f sinceDate:[NSDate date]]];
-}
 
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeInterval:0.350f sinceDate:[NSDate date]]];
+    ////接続し、受信完了まで0.350fループを回す
+}
+//----------------------------------------------------------------------------------------------------------
+
+// ここは接続出来たらどうするかという記述------------------------------------------------------------------------
 - (void) establishConnection {
     _connection = [[MKConnection alloc] init];
     [_connection setDelegate:self];
@@ -127,11 +147,13 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     _serverRoot = [[MUServerRootViewController alloc] initWithConnection:_connection andServerModel:_serverModel];
     
     // Set the connection's client cert if one is set in the app's preferences...
+    //DefaultCertificateのところは設定いらない。ここは削除しても結構。
     NSData *certPersistentId = [[NSUserDefaults standardUserDefaults] objectForKey:@"DefaultCertificate"];
     if (certPersistentId != nil) {
         NSArray *certChain = [MUCertificateChainBuilder buildChainFromPersistentRef:certPersistentId];
         [_connection setCertificateChain:certChain];
     }
+    //-----------------------------------------------------------------------------
     
     [_connection connectToHost:_hostname port:_port];
 
@@ -139,7 +161,9 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
         [[NSNotificationCenter defaultCenter] postNotificationName:MUConnectionOpenedNotification object:nil];
     });
 }
+//----------------------------------------------------------------------------------------------------------
 
+// サーバー接続が解除されたら・・・の記載-----------------------------------------------------------
 - (void) teardownConnection {
     [_serverModel removeDelegate:self];
     [_serverModel release];
@@ -151,15 +175,15 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     [_timer invalidate];
     [_serverRoot release];
     _serverRoot = nil;
-    
-    // Reset app badge. The connection is no more.
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    // 上記は様々な解放をしていっている
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:MUConnectionClosedNotification object:nil];
     });
 }
-            
+//-------------------------------------------------------------------------------------------
+
+//サーバー接続中ですの表示のくだり------------------------------------------------------------------
 - (void) updateTitle {
     ++_numDots;
     if (_numDots > 3)
@@ -170,15 +194,25 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     if (_numDots == 2) { dots = @".. "; }
     if (_numDots == 3) { dots = @"..."; }
     
-    [_alertView setTitle:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Connecting", nil), dots]];
+    [_alertView setTitle:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"接続中です", nil), dots]];
 }
+//----------------------------------------------------------------------------------------------
 
 #pragma mark - MKConnectionDelegate
 
+// 接続された後------------------------------------------------------------------------
 - (void) connectionOpened:(MKConnection *)conn {
     NSArray *tokens = [MUDatabase accessTokensForServerWithHostname:[conn hostname] port:[conn port]];
     [conn authenticateWithUsername:_username password:_password accessTokens:tokens];
 }
+//------------------------------------------------------------------------------------
+
+// 接続がエラーによって閉じる場合---------------------------------------------------
+// ここでは接続している間に圏外になったりする場合のメッセージ
+
+// 9/14更新
+// 圏外になったら再接続を何度かループする設定が必要
+// たぶん4Gから3Gに変更になっただけで接続が切れたはずなので、これはなんとかしないといけない
 
 - (void) connection:(MKConnection *)conn closedWithError:(NSError *)err {
     [self hideConnectingView];
@@ -194,6 +228,7 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     }
 }
 
+// ここからはどんな状況によって接続エラーになったのかを、状況別に引き出す記述-----------------------
 - (void) connection:(MKConnection*)conn unableToConnectWithError:(NSError *)err {
     [self hideConnectingView];
 
@@ -223,8 +258,10 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     [alertView release];
     [self teardownConnection];
 }
+//-----------------------------------------------------------------------------------
 
 // The connection encountered an invalid SSL certificate chain.
+//SSL認証が合わない場合（使う予定はない）
 - (void) connection:(MKConnection *)conn trustFailureInCertificateChain:(NSArray *)chain {
     // Check the database whether the user trusts the leaf certificate of this server.
     NSString *storedDigest = [MUDatabase digestForServerWithHostname:[conn hostname] port:[conn port]];
@@ -271,8 +308,10 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
         [alert release];
     }
 }
+//---------------------------------------------------------------------------------------------------
 
 // The server rejected our connection.
+// 様々な理由により接続ができない場合の記述--------------------------------------------------------------------------------
 - (void) connection:(MKConnection *)conn rejectedWithReason:(MKRejectReason)reason explanation:(NSString *)explanation {
     NSString *title = NSLocalizedString(@"Connection Rejected", nil);
     NSString *msg = nil;
@@ -363,16 +402,20 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     [alert show];
     [alert release];
 }
+//-----------------------------------------------------------------------------------------
 
 #pragma mark - MKServerModelDelegate
 
+// サーバーにユーザーが入った時のサーバーモデルの状態
 - (void) serverModel:(MKServerModel *)model joinedServerAsUser:(MKUser *)user {
     [MUDatabase storeUsername:[user userName] forServerWithHostname:[model hostname] port:[model port]];
+    // データーベースにユーザー名が保存されるみたいな
 
-    [self hideConnectingView];
+    [self hideConnectingView];  //接続閉じるビューの表示
 
-    [_serverRoot takeOwnershipOfConnectionDelegate];
+    [_serverRoot takeOwnershipOfConnectionDelegate];  //ここは謎
 
+    //次々と解放
     [_username release];
     _username = nil;
     [_hostname release];
@@ -392,9 +435,12 @@ NSString *MUConnectionClosedNotification = @"MUConnectionClosedNotification";
     [_parentViewController release];
     _parentViewController = nil;
 }
+//----------------------------------------------------------------------------------
 
 #pragma mark - UIAlertView delegate
 
+// あー、ここなんか初めて接続した際に出てくるアラートだと思う。ここは出てこないようにするか、
+// もしくは自動的に無視するように設定したいところ。確かに初めて接続したらこのアラートがでて、前の画面に戻されたかと思う。
 - (void) alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
     // Actions for the outermost UIAlertView

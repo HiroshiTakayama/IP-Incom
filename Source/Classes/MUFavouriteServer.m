@@ -17,14 +17,15 @@
 
 @implementation MUFavouriteServer
 
-@synthesize primaryKey         = _pkey;
+@synthesize primaryKey         = _pkey;  //これが何なのかよくわからんが、実際のところ使用されていない気がする
 @synthesize displayName        = _displayName;
 @synthesize hostName           = _hostName;
 @synthesize port               = _port;
 @synthesize userName           = _userName;
 @synthesize password           = _password;
 
-- (id) initWithDisplayName:(NSString *)displayName hostName:(NSString *)hostName port:(NSUInteger)port userName:(NSString *)userName password:(NSString *)passWord {
+- (id) initWithDisplayName:(NSString *)displayName hostName:(NSString *)hostName
+                      port:(NSUInteger)port userName:(NSString *)userName password:(NSString *)passWord {
     self = [super init];
     if (self == nil)
         return nil;
@@ -51,7 +52,7 @@
     [super dealloc];
 }
 
-- (id) copyWithZone:(NSZone *)zone {
+- (id) copyWithZone:(NSZone *)zone {  //オブジェクトの局所性を保つ
     MUFavouriteServer *favServ = [[MUFavouriteServer alloc] initWithDisplayName:_displayName hostName:_hostName port:_port userName:_userName password:_password];
     if ([self hasPrimaryKey])
         [favServ setPrimaryKey:[self primaryKey]];
@@ -59,7 +60,7 @@
 }
 
 - (BOOL) hasPrimaryKey {
-    return _pkey != -1;
+    return _pkey != -1;   //_pkeyとはたぶんopenSSLプロジェクトに出てくるのかな。証明書とかに使っているものかも。
 }
 
 - (NSComparisonResult) compare:(MUFavouriteServer *)favServ {

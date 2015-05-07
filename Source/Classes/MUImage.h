@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//各イメージの設定
+
+
 @interface MUImage : NSObject
 + (UIImage *) tableViewCellImageFromImage:(UIImage *)srcImage;
 + (UIImage *) imageNamed:(NSString *)imageName;

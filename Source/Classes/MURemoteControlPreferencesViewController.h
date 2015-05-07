@@ -4,3 +4,6 @@
 
 @interface MURemoteControlPreferencesViewController : UITableViewController
 @end
+
+
+// リモートコントロールの設定の箇所。通常アプリ側には表示されていない。

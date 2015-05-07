@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// たぶんサーバー接続中のテーブルのセルなどの設定
+
+
 #import "MUServerTableViewCell.h"
 
 @implementation MUServerTableViewCell
@@ -27,7 +30,7 @@
 
     self.textLabel.frame = CGRectMake(
         CGRectGetMinX(self.imageView.frame) + 40,
-        CGRectGetMinY(self.textLabel.frame),
+        CGRectGetMinY(self.textLabel.frame) ,
         CGRectGetWidth(self.frame) - (CGRectGetMinX(self.imageView.frame) + 60),
         CGRectGetHeight(self.textLabel.frame)
     );
